@@ -13,9 +13,15 @@ namespace database
 {
     public partial class DbInterface : Form
     {
-        public DbInterface()
+        public DbInterface(string[] init)
         {
             InitializeComponent();
+            foreach(string comm in init)
+            {
+                CommandInput.Text = comm;
+                Execute_Click(this, null);
+                CommandInput.Clear();
+            }
         }
 
         private void UpdateDbInfo()
@@ -31,21 +37,12 @@ namespace database
             CommandOutput.AppendText("\n>>>" + CommandInput.Text + "\n");
             CommandOutput.AppendText(DbInterpretter.Execute(CommandInput.Text) + '\n');
             CommandInput.Clear();
-            if (!DbInterpretter.running) Close();
+            if (!DbInterpretter.isRunning) Close();
             UpdateDbInfo();
         }
 
         private void DbInterface_Load(object sender, EventArgs e)
         {
-            DbInterpretter.running = true;
-            Console.Out.WriteLine("Known databases:\n" + String.Join("\n", Database.GetKnownDBs()));
-            if (Debug.on)
-                try
-                {
-                    DbInterpretter.Execute("conn testDB");
-                    DbInterpretter.Execute("restore");
-                }
-                catch { Debug.Write("Failed debug setup"); }
             UpdateDbInfo();
         }
 
@@ -67,13 +64,16 @@ namespace database
                 using (StreamWriter sw = new StreamWriter(saveLogFileDialog.FileName))
                     sw.WriteLine(CommandOutput.Text);
             }
-            
-
         }
 
         private void dbInfo_TextChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private void CommandOutput_TextChanged(object sender, EventArgs e)
+        {
+            CommandOutput.ScrollToCaret();
         }
     }
 }

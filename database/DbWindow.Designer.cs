@@ -70,6 +70,7 @@
             this.CommandOutput.TabIndex = 2;
             this.CommandOutput.Text = "";
             this.CommandOutput.WordWrap = false;
+            this.CommandOutput.TextChanged += new System.EventHandler(this.CommandOutput_TextChanged);
             // 
             // Save
             // 
@@ -104,8 +105,7 @@
             // 
             // dbInfo
             // 
-            this.dbInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.dbInfo.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dbInfo.Location = new System.Drawing.Point(453, 42);
             this.dbInfo.Name = "dbInfo";

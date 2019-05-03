@@ -23,6 +23,7 @@ namespace database
             if (on) Console.Out.WriteLine($"[{type}][{name}]" + msg);
         }
     }
+
     public interface IFormatConverter
     {
         string Encode(string[] line);
@@ -227,11 +228,11 @@ namespace database
             for (int i = 0; i < Count; i++)
                 result.Add(this[i].ToArray());
             int colSz;
-            for(int col=0; col < result[0].Length; col++)
+            for (int col = 0; col < result[0].Length; col++)
             {
                 colSz = 0;
                 for (int ln = 0; ln < result.Count; ln++)
-                    if(result[ln][col].Length > colSz)
+                    if (result[ln][col].Length > colSz)
                         colSz = result[ln][col].Length;
                 if (colSz > maxPrintLen)
                     colSz = maxPrintLen;
@@ -274,7 +275,7 @@ namespace database
             Add(t.name, t);
             return this;
         }
-        
+
         public bool Save(string destDir = "", IFormatConverter conv = null)
         {
             if (destDir.Length == 0) destDir = GetDirName();
@@ -328,7 +329,7 @@ namespace database
         public static Database noDb = new Database("No DB");
         public static Database currentDb = noDb;
 
-        public static bool running = false;
+        public static bool isRunning = false;
         static Func<char, string> spacedWordIn = (x => $"(\\{x}[\\w ]+\\{x})");
         static Func<string, string> multi = (x => $"(?:{x}(?:_,_{x})*)".Replace("_", "\\s*"));
         static char strSep = '\'';
@@ -342,13 +343,25 @@ namespace database
         static string logicOp = "(?:(==)|(!=)|( startswith )|( endswith ))";
         static string rValue = $"(?:{term}|{strTerm})";
         static string condition = $"(?:{lValue}_{logicOp}_{rValue})".Replace("_", "\\s*");
+        static string condOp = "(( and )|( or ))";
+        static string conditions = $"({condition}(_{condOp}_{condition})*)".Replace("_", "\\s*");
         static string assign = $"(?:{lValue}_=_{rValue})".Replace("_", "\\s*");
 
+        static Predicate<TableLine> CombineCond(Predicate<TableLine> fCond, string oper, Predicate<TableLine> sCond)
+        {
+            switch (oper.Trim())
+            {
+                case "or": return x => fCond(x) || sCond(x);
+                case "and": return x => fCond(x) && sCond(x);
+            }
+            return x => true;
+        }
         static Predicate<TableLine> parseCondition(string strCond)
         {
             if (strCond == "") return (x => true);
+
             string[] aAssign = new Regex($"{lValue}|{rValue}|{logicOp}").Matches(strCond).Cast<Match>().Select(x => x.Value).ToArray();
-            string 
+            string
                 lVal = aAssign[0],
                 op = aAssign[1],
                 rVal = aAssign[2];
@@ -371,12 +384,23 @@ namespace database
             }
             return (x => false);
         }
+        static Predicate<TableLine> parseConditions(string strCond)
+        {
+            if (strCond == "") return (x => true);
+
+            string[] myConditions = new Regex($"{condition}|{condOp}").Matches(strCond).Cast<Match>().Select(x => x.Value).ToArray();
+
+            Predicate<TableLine> finalCond = parseCondition(myConditions[0]);
+            for (int pos = 2; pos<myConditions.Length; pos+=2)
+                finalCond = CombineCond(finalCond, myConditions[pos-1], parseCondition(myConditions[pos]));
+            return finalCond;
+        }
 
         public static string BYE_Command(string param)
         {
             if (param == "-h")
                 return "bye                           |-> quit";
-            running = false;
+            isRunning = false;
             return "Bye!";
         }
         public static string HELP_Command(string param)
@@ -393,7 +417,7 @@ namespace database
         {
             if (param == "-h")
                 return "Save [path]                   |-> Saves the database to a provided or default path " +
-                     "\nSave tableName [path]         |-> Saves a table from current DB to a provided or default path";
+                     "\nSave tableName [path] [CSV]   |-> Saves a table from current DB to a provided or default path";
             check(currentDb != noDb, "Not allowed");
             if (param == "") { currentDb.Save(); return "Database " + currentDb.name + " saved."; }
             IFormatConverter conv = null;
@@ -443,10 +467,10 @@ namespace database
 
             return "Table " + tbName + " restored.";
         }
-        public static string CONN_Command(string param)
+        public static string USE_Command(string param)
         {
             if (param == "-h")
-                return "Conn DBname                   |-> Set the DBname database active (as empty)";
+                return "Use DBname                    |-> Set the DBname database active (as empty)";
             check(param.Length == 0 || param.Split().Length > 0, "Invalid DBname");
             currentDb = new Database(param);
 
@@ -455,7 +479,7 @@ namespace database
         public static string DROP_Command(string param)
         {
             if (param == "-h")
-                return "Drop tbName                   |-> drop table from current db";
+                return "Drop tbName                   |-> Drop table from current db";
             check(currentDb != noDb, "Not allowed");
             currentDb.Remove(param);
             return "Table " + param + " removed";
@@ -463,7 +487,7 @@ namespace database
         public static string CREATE_Command(string param)
         {
             if (param == "-h")
-                return "Create <table> (<field names>)                                    |-> List tables from current db";
+                return "Create <table> (<field names>)                                    |-> Create a table on current db";
 
             check(currentDb != noDb, "Not allowed");
             string create = $"(?<table>{term})_\\(_(?<fields>{multi(term)})_\\)".Replace("_", "\\s*");
@@ -484,7 +508,7 @@ namespace database
         public static string INSERT_Command(string param)
         {
             if (param == "-h")
-                return "Insert into <table name> (<fields list>) values (<values list>)   |-> List tables from current db";
+                return "Insert into <table name> (<fields list>) values (<values list>)   |-> Insert int table on current db";
             check(currentDb != noDb, "Not allowed");
             string insert = $"INTO _(?<table>{term})_\\(_(?<fields>{multi(lValue)})_\\)_VALUES_\\(_(?<values>{multi(rValue)})_\\)".Replace("_", "\\s*");
 
@@ -502,7 +526,7 @@ namespace database
             List<string> valuesList = new List<string>();
             foreach (Match m in new Regex($"{rValue}").Matches(values))
                 valuesList.Add(m.Value.Trim(strSep));
-            
+
             currentDb[tableName].AddLine(new TableLine(new ColumnNames(fieldsList.ToArray())).SetContent(valuesList.ToArray()));
 
             return "Ok";
@@ -512,7 +536,7 @@ namespace database
             if (param == "-h")
                 return "Update <table name> set <field=value>+ where <condition>          |-> Update table entries on selected fields";
             check(currentDb != noDb, "Not allowed");
-            string update = $"(?<table>{term})_SET_(?<assigns>{multi(assign)})_WHERE_(?<condition>{condition})".Replace("_", "\\s+");
+            string update = $"(?<table>{term})_SET_(?<assigns>{multi(assign)})_WHERE_(?<condition>{conditions})".Replace("_", "\\s+");
 
             Match matches = new Regex(update, RegexOptions.IgnoreCase).Match(param);
             check(matches.Value.Length == param.Length, "Syntax error");
@@ -520,7 +544,7 @@ namespace database
                 tableName = matches.Groups["table"].Value,
                 assigns = matches.Groups["assigns"].Value,
                 cond = matches.Groups["condition"].Value;
-            foreach(TableLine line in currentDb[tableName].Where(parseCondition(cond)))
+            foreach (TableLine line in currentDb[tableName].Where(parseConditions(cond)))
                 foreach (Match m in new Regex($"{assign}").Matches(assigns))
                 {
                     string[] aAssign = new Regex($"{lValue}|{rValue}").Matches(m.Value).Cast<Match>().Select(x => x.Value).ToArray();
@@ -533,16 +557,16 @@ namespace database
         public static string DELETE_Command(string param)
         {
             if (param == "-h")
-                return "Delete from <table name> where <condition>                        |-> List tables from current db";
+                return "Delete from <table name> where <condition>                        |-> Delete table from current db";
             check(currentDb != noDb, "Not allowed");
-            string delete = $"FROM_(?<table>{term})_WHERE_(?<condition>{condition})".Replace("_", "\\s+");
+            string delete = $"FROM_(?<table>{term})_WHERE_(?<condition>{conditions})".Replace("_", "\\s+");
 
             Match matches = new Regex(delete, RegexOptions.IgnoreCase).Match(param);
             check(matches.Value.Length == param.Length, "Syntax error");
             string
                 tableName = matches.Groups["table"].Value,
                 cond = matches.Groups["condition"].Value;
-            currentDb[tableName].RemoveAll(parseCondition(cond));
+            currentDb[tableName].RemoveAll(parseConditions(cond));
 
             return "Ok";
         }
@@ -552,12 +576,11 @@ namespace database
                 return "Select <*|fields list> from <table> [where <condition>]           |-> List tables from current db";
             check(currentDb != noDb, "Not allowed");
 
-            string select = $"(?<selList>{all}|{multi(term)})_FROM_(?<table>{term})(?:_WHERE_(?<condition>{condition}))?".Replace("_", "\\s+");
+            string select = $"(?<selList>{all}|{multi(term)})_FROM_(?<table>{term})(?:_WHERE_(?<condition>{conditions}))?".Replace("_", "\\s+");
 
             Match matches = new Regex(select, RegexOptions.IgnoreCase).Match(param);
-
             check(matches.Value.Length == param.Length, "Syntax error");
-            string 
+            string
                 allFields = matches.Groups["selList"].Value,
                 tableName = matches.Groups["table"].Value,
                 whereCond = matches.Groups["condition"].Value;
@@ -566,19 +589,19 @@ namespace database
                 return String.Join("\n", currentDb.Keys);
 
             if (allFields == "*")
-                return 
+                return
                     currentDb[tableName]
-                    .Where(parseCondition(whereCond))
+                    .Where(parseConditions(whereCond))
                     .ToString();
 
             List<string> fields = new List<string>();
             foreach (Match m in new Regex($"{term}").Matches(allFields))
-                    fields.Add(m.Value.Trim('"', '\''));
+                fields.Add(m.Value.Trim('"', '\''));
 
-            return 
+            return
                 currentDb[tableName]
                 .Select(new ColumnNames(fields.ToArray()))
-                .Where(parseCondition(whereCond))
+                .Where(parseConditions(whereCond))
                 .ToString();
         }
 
@@ -600,36 +623,28 @@ namespace database
             catch (InterpretterException e) { return ("Console error: " + e.Message); }
             catch { return ("Unknown exception: " + command); }
         }
-
     }
 
-    class DbConsoleInterpretter
+    class DB_ConsoleInterface
     {
-        public static void Run()
+        public static void Run(string[] init)
         {
-            DbInterpretter.running = true;
             Console.Out.WriteLine("Known databases:\n" + String.Join("\n", Database.GetKnownDBs()));
-            if (Debug.on)
-                try
-                {
-                    DbInterpretter.Execute("conn testDB");
-                    DbInterpretter.Execute("restore");
-                }
-                catch { Debug.Write("Failed debug setup"); }
-            while (DbInterpretter.running)
+            foreach (string comm in init) Console.Out.WriteLine(DbInterpretter.Execute(comm));
+            while (DbInterpretter.isRunning)
             {
                 Console.Out.Write(DbInterpretter.currentDb.name + ">");
                 Console.Out.WriteLine(DbInterpretter.Execute(Console.In.ReadLine()));
             }
         }
     }
-    class DbWindowInterpretter
+    class DB_WindowInterface
     {
-        public static void Run()
+        public static void Run(string[] init)
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new DbInterface());
+            Application.Run(new DbInterface(init));
         }
     }
 
@@ -637,8 +652,14 @@ namespace database
     {
         static void Main(string[] args)
         {
-            //DbConsoleInterpretter.Run();
-            DbWindowInterpretter.Run();
+            DbInterpretter.isRunning = true;
+            string[] init = {
+                "use testDB",
+                "restore",
+                "select * from table1",
+                };
+            DB_ConsoleInterface.Run(init);
+            //DB_WindowInterface.Run(init);
         }
     }
 }
