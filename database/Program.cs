@@ -625,7 +625,7 @@ namespace database
         }
     }
 
-    class DB_ConsoleInterface
+    public class DB_ConsoleInterface
     {
         public static void Run(string[] init)
         {
@@ -638,7 +638,7 @@ namespace database
             }
         }
     }
-    class DB_WindowInterface
+    public class DB_WindowInterface
     {
         public static void Run(string[] init)
         {
