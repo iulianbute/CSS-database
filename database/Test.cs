@@ -1,5 +1,6 @@
 ﻿using System;
 using NUnit.Framework;
+using NMock;
 
 namespace database
 {
@@ -415,6 +416,33 @@ namespace database
             string parameter = "param1;param2;param3";
             string[] actual = new CSVformatConverter().Decode(parameter);
             Assert.AreEqual(expected, actual);
+        }
+    }
+
+    [TestFixture]
+    public class TableTests
+    {
+        private MockFactory mockFactory;
+
+        [Test]
+        public void SaveRestoreTableTest1()
+        {
+            string[] cols = { "col1", "col2", "col3" };
+            Table testTable1 = new Table("testTable", new ColumnNames(cols));
+            string[] tableLine = new string[] { "col1Content", "col2Content", "col3Content" };
+            testTable1.AddLine(tableLine);
+            mockFactory = new MockFactory();
+            var converter = mockFactory.CreateMock<IFormatConverter>();
+            converter.Expects.One.MethodWith(_ => _.Encode(cols)).WillReturn("col1;col2;col3");
+            converter.Expects.One.MethodWith(_ => _.Encode(tableLine)).WillReturn("col1Content;col2Content;Col3Content");
+            bool saved = testTable1.Save("D:\\", converter.MockObject);
+            converter.Expects.One.MethodWith(_ => _.Decode("col1;col2;col3")).WillReturn(cols);
+            converter.Expects.One.MethodWith(_ => _.Decode("col1Content;col2Content;Col3Content")).WillReturn(tableLine);
+            Table testTable2 = new Table("D:\\testTable", converter.MockObject);
+
+            mockFactory.VerifyAllExpectationsHaveBeenMet();
+            Assert.AreEqual(saved, true);
+            Assert.AreEqual(testTable1.ToString(), testTable2.ToString());
         }
     }
 }
