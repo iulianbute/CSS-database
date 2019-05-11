@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace database
@@ -289,6 +285,113 @@ namespace database
             Assert.AreEqual(expected, actual);
             expected = "Database error: No table named ";
             actual = DbInterpretter.Execute("update");
+            Assert.AreEqual(expected, actual);
+        }
+    }
+
+    [TestFixture]
+    public class ConvertorTests
+    {
+        [Test]
+        public void DefaultFormatEncodeTest1()
+        {
+            String expected = "";
+            String actual = new DefaultFormatConverter().Encode(null);
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void DefaultFormatEncodeTest2()
+        {
+            String expected = "";
+            string[] parameters = { };
+            String actual = new DefaultFormatConverter().Encode(parameters);
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void DefaultFormatEncodeTest3()
+        {
+            string[] parameters = { "param1", "param2", "param3"};
+            String expected = "6|param1|6|param2|6|param3|";
+            String actual = new DefaultFormatConverter().Encode(parameters);
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void CSVEncodeTest1()
+        {
+            String expected = "";
+            String actual = new CSVformatConverter().Encode(null);
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void CSVEncodeTest2()
+        {
+            String expected = "";
+            string[] parameters = { };
+            String actual = new CSVformatConverter().Encode(parameters);
+            Assert.AreEqual(expected, actual);
+        }
+
+
+        [Test]
+        public void CSVEncodeTest3()
+        {
+            string[] parameters = { "param1", "param2", "param3" };
+            String expected = "param1;param2;param3";
+            String actual = new CSVformatConverter().Encode(parameters);
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void DefaultFormatDecodeTest1()
+        {
+            string[] expected = { };
+            string[] actual = new DefaultFormatConverter().Decode(null);
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void DefaultFormatDecodeTest2()
+        {
+            string[] expected = { };
+            string[] actual = new DefaultFormatConverter().Decode("");
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void DefaultFormatDecodeTest3()
+        {
+            string[] expected = { "param1", "param2", "param3" };
+            string parameter = "6|param1|6|param2|6|param3|";
+            string[] actual = new DefaultFormatConverter().Decode(parameter);
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void CSVDecodeTest1()
+        {
+            string[] expected = { };
+            string[] actual = new CSVformatConverter().Decode(null);
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void CSVDecodeTest2()
+        {
+            string[] expected = { };
+            string[] actual = new CSVformatConverter().Decode("");
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void CSVDecodeTest3()
+        {
+            string[] expected = { "param1", "param2", "param3" };
+            string parameter = "param1;param2;param3";
+            string[] actual = new CSVformatConverter().Decode(parameter);
             Assert.AreEqual(expected, actual);
         }
     }
