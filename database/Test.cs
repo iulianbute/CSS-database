@@ -208,13 +208,35 @@ namespace database
         }
 
         [Test]
-        public void SaveWithoutParamsTest()
+        public void SaveCurrentDatabaseTest()
         {
             String expected = "Database unitTestingDB set active as empty. you can try to restore.";
             String actual = DbInterpretter.Execute("use unitTestingDB");
             Assert.AreEqual(expected, actual);
-            expected = "Database error: Save to DB.unitTestingDB failed!";
-            actual = DbInterpretter.Execute("save");
+            expected = "Database unitTestingDB saved.";
+            actual = DbInterpretter.Execute("save ");
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void SaveDefaultFormatTest()
+        {
+            String expected = "Database unitTestingDB set active as empty. you can try to restore.";
+            String actual = DbInterpretter.Execute("use unitTestingDB");
+            Assert.AreEqual(expected, actual);
+            expected = "Database unitTestingDB saved.";
+            actual = DbInterpretter.Execute("save D:\\");
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void SaveCSVFormatTest()
+        {
+            String expected = "Database unitTestingDB set active as empty. you can try to restore.";
+            String actual = DbInterpretter.Execute("use unitTestingDB");
+            Assert.AreEqual(expected, actual);
+            expected = "Database unitTestingDB saved.";
+            actual = DbInterpretter.Execute("save D:\\ CSV");
             Assert.AreEqual(expected, actual);
         }
     }
