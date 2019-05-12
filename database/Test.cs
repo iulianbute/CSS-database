@@ -288,7 +288,7 @@ namespace database
 
             expected = "result:\n    col1     col2\ncontent1 content2";
             actual = DbInterpretter.Execute("Select * from tab where col1 startswith 'c'");
-           // Assert.AreEqual(expected, actual);
+            // Assert.AreEqual(expected, actual);
 
             expected = "result:\n    col1     col2\ncontent1 content2";
             actual = DbInterpretter.Execute("Select * from tab where col1 endswith '1'");
@@ -328,6 +328,25 @@ namespace database
             actual = DbInterpretter.Execute("Select * from tab where col1 endswith '12'");
             Assert.AreEqual(expected, actual);
 
+
+
+
+            expected = "result:\ncol1 col2";
+            actual = DbInterpretter.Execute("Select * from tab where col1!=col1");
+            Assert.AreEqual(expected, actual);
+
+            expected = "result:\ncol1 col2";
+            actual = DbInterpretter.Execute("Select * from tab where col1==col2");
+            Assert.AreEqual(expected, actual);
+
+            expected = "result:\ncol1 col2";
+            actual = DbInterpretter.Execute("Select * from tab where col1 startswith col2");
+            Assert.AreEqual(expected, actual);
+
+            expected = "result:\ncol1 col2";
+            actual = DbInterpretter.Execute("Select * from tab where col1 endswith col2");
+            Assert.AreEqual(expected, actual);
+
         }
     }
 
@@ -349,7 +368,7 @@ namespace database
             String actual = DbInterpretter.Execute("help");
             Assert.Greater(actual.Length, 0);
 
-        } 
+        }
     }
 
     [TestFixture]
@@ -378,11 +397,12 @@ namespace database
         [Test]
         public void SaveDefaultFormatTest()
         {
-            String expected = "Database unitTestingDB set active as empty. you can try to restore.";
-            String actual = DbInterpretter.Execute("use unitTestingDB");
-            Assert.AreEqual(expected, actual);
-            expected = "Database unitTestingDB saved.";
-            actual = DbInterpretter.Execute("save");
+            DbInterpretter.Execute("use unitTestingDB");
+            DbInterpretter.Execute("create tab (col1, col2)");
+            DbInterpretter.Execute("Insert into tab (col1, col2) values (content1, content2)");
+
+            string expected = "Database unitTestingDB saved.";
+            string actual = DbInterpretter.Execute("save");
             Assert.AreEqual(expected, actual);
         }
 
@@ -486,7 +506,7 @@ namespace database
         public void DefaultFormatEncodeTest1()
         {
             String expected = "0||";
-            String actual = new DefaultFormatConverter().Encode(new string[] {"" });
+            String actual = new DefaultFormatConverter().Encode(new string[] { "" });
             Assert.AreEqual(expected, actual);
         }
 
@@ -502,7 +522,7 @@ namespace database
         [Test]
         public void DefaultFormatEncodeTest3()
         {
-            string[] parameters = { "param1", "param2", "param3"};
+            string[] parameters = { "param1", "param2", "param3" };
             String expected = "6|param1|6|param2|6|param3|";
             String actual = new DefaultFormatConverter().Encode(parameters);
             Assert.AreEqual(expected, actual);
@@ -520,7 +540,7 @@ namespace database
         public void CSVEncodeTest2()
         {
             String expected = "str1;str2";
-            string[] parameters = {"str1", "str2" };
+            string[] parameters = { "str1", "str2" };
             String actual = new CSVformatConverter().Encode(parameters);
             Assert.AreEqual(expected, actual);
         }
@@ -563,7 +583,7 @@ namespace database
         [Test]
         public void CSVDecodeTest1()
         {
-            string[] expected = {"str1", "str2" };
+            string[] expected = { "str1", "str2" };
             string[] actual = new CSVformatConverter().Decode("str1;str2");
             Assert.AreEqual(expected, actual);
         }
@@ -571,7 +591,7 @@ namespace database
         [Test]
         public void CSVDecodeTest2()
         {
-            string[] expected = { ""};
+            string[] expected = { "" };
             string[] actual = new CSVformatConverter().Decode("");
             Assert.AreEqual(expected, actual);
         }
@@ -742,10 +762,50 @@ namespace database
                 Program.Main(voidString);
                 ok = true;
             }
-            catch {}
+            catch { }
             Assert.AreEqual(ok, true);
         }
     }
 
+    [TestFixture]
+    public class TableTest
+    {
+        [Test]
+        public void TestTableSelect()
+        {
+            string[] numeCol1 = { "col11", "col12", "col13" };
+            ColumnNames columnName1 = new ColumnNames(numeCol1);
+
+            Table testTable = new Table("testTable", columnName1);
+            Table result = testTable.Select(columnName1);
+
+            Assert.AreEqual(result.ToString(), "result:\ncol11 col12 col13");
+
+        }
+
+        [Test]
+        public void TestTableCheck()
+        {
+            Table.TableException dex = Assert.Throws<Table.TableException>(delegate { Table.check(false, "DoneTesting"); });
+            Assert.That(dex.Message, NUnit.Framework.Is.EqualTo("DoneTesting"));
+        }
+    }
+
+    [TestFixture]
+    public class DbInterpreterTests
+    {
+        [Test]
+        public void RestoreTest()
+        {
+                String expected = "Database error: No table named unitTestingDB";
+                String actual = DbInterpretter.Execute("restore unitTestingDB");
+
+                Assert.AreEqual(expected, actual);
+
+                DbInterpretter.Execute("use unitTestingDB");
+                actual = DbInterpretter.Execute("restore");
+                Assert.AreEqual("Database unitTestingDB restored.", actual);
+        }
+    }
 
 }

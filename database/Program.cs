@@ -275,6 +275,10 @@ namespace database
             try
             {
                 Directory.Delete(destDir);
+            }
+            catch { }
+            try
+            {
                 Directory.CreateDirectory(destDir);
                 foreach (Table table in Values)
                     table.Save(destDir, conv);
