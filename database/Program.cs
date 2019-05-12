@@ -139,7 +139,7 @@ namespace database
     {
         public class TableException : Exception { public TableException(string msg) : base(msg) { } }
         public static void check(bool cond, string except) { if (!cond) throw new TableException(except); }
-        public static int maxPrintLen = 10;
+        public static int maxPrintLen = 30;
 
         public string name;
         public ColumnNames columnName;

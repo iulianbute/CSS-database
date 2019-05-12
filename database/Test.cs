@@ -182,6 +182,39 @@ namespace database
             actual = DbInterpretter.Execute("select");
             Assert.AreEqual(expected, actual);
         }
+
+        [Test]
+        public void SelectWithoutTableTest()
+        {
+            String expected = "Database unitTestingDB set active as empty. you can try to restore.";
+            String actual = DbInterpretter.Execute("use unitTestingDB");
+            Assert.AreEqual(expected, actual);
+            expected = "Database error: No table named unitTestingDB";
+            actual = DbInterpretter.Execute("select * from unitTestingDB");
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void SimpleSelectTest()
+        {
+            String expected = "Database unitTestingDB set active as empty. you can try to restore.";
+            String actual = DbInterpretter.Execute("use unitTestingDB");
+            Assert.AreEqual(expected, actual);
+            expected = "Ok";
+            actual = DbInterpretter.Execute("create tab (col1, col2)");
+            Assert.AreEqual(expected, actual);
+            expected = "result:\ncol1 col2";
+            actual = DbInterpretter.Execute("Select * from tab");
+            Assert.AreEqual(expected, actual);
+            expected = "Ok";
+            actual = DbInterpretter.Execute("Insert into tab (col1, col2) values (content1, content2)");
+            Assert.AreEqual(expected, actual);
+            expected = "result:\n    col1     col2\ncontent1 content2";
+            actual = DbInterpretter.Execute("Select * from tab");
+            Console.WriteLine(expected);
+            Console.WriteLine(actual);
+            Assert.AreEqual(expected, actual);
+        }
     }
 
     [TestFixture]
@@ -423,6 +456,18 @@ namespace database
     public class TableTests
     {
         private MockFactory mockFactory;
+
+        [Test]
+        public void addLineTest1()
+        {
+            string[] cols = { "col1", "col2", "col3" };
+            Table testTable1 = new Table("testTable", new ColumnNames(cols));
+            string[] tableLine = new string[] { "col1Content", "col2Content", "col3Content" };
+            testTable1.AddLine(tableLine);
+            String expected = "testTable:\n       col1        col2        col3\ncol1Content col2Content col3Content";
+            String actual = testTable1.ToString();
+            Assert.AreEqual(expected, actual);
+        }
 
         [Test]
         public void SaveRestoreTableTest1()
