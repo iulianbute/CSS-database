@@ -541,4 +541,42 @@ namespace database
             DB_WindowInterface.Run(init);
         }
     }
+
+    [TestFixture]
+    public class ColumnNamesTest
+    {
+        [Test]
+        public void ColumnNamesEqualsTestReturnFalse()
+        {
+            string[] numeCol1 = { "col11", "col12", "col13" };
+            ColumnNames columnName1 = new ColumnNames(numeCol1);
+
+            string[] numeCol2 = { "col21", "col22", "col23" };
+            ColumnNames columnName2 = new ColumnNames(numeCol2);
+            Assert.AreEqual(columnName1.Equals(columnName2), false);
+        }
+
+        [Test]
+        public void ColumnNamesEqualsTestReturnTrue()
+        {
+            string[] numeCol1 = { "col1", "col2", "col3" };
+            ColumnNames columnName1 = new ColumnNames(numeCol1);
+
+            string[] numeCol2 = { "col1", "col2", "col3" };
+            ColumnNames columnName2 = new ColumnNames(numeCol2);
+            Assert.AreEqual(columnName1.Equals(columnName2), true);
+        }
+
+        [Test]
+        public void ColumnNamesAllInTestReturnFalse()
+        {
+            string[] numeCol1 = { "col1", "col2", "col3" };
+            ColumnNames columnName1 = new ColumnNames(numeCol1);
+
+            string[] numeCol2 = { "col1", "col2", "col4" };
+            ColumnNames columnName2 = new ColumnNames(numeCol2);
+            Assert.AreEqual(columnName1.AllIn(columnName2), false);
+
+        }
+    }
 }

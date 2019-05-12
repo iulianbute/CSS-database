@@ -261,13 +261,6 @@ namespace database
                 .Select(d => Path.GetFileName(d).Substring(dbPrefix.Length)).ToArray();
         }
         public string GetDirName() { return dbPrefix + name; }
-        public string GetDbName(string path)
-        {
-            string fileName = Path.GetFileName(path);
-            if (fileName.StartsWith(dbPrefix))
-                return fileName.Substring(dbPrefix.Length);
-            return fileName;
-        }
         public Database(string dbName) { name = dbName; }
         public Database Add(Table t)
         {
