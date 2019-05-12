@@ -64,7 +64,7 @@ namespace database
             String expected = "Database unitTestingDB set active as empty. you can try to restore.";
             String actual = DbInterpretter.Execute("use unitTestingDB");
             Assert.AreEqual(expected, actual);
-            expected = "Ceva Eroare??????? TO DO!";
+            expected = "Ok";
             actual = DbInterpretter.Execute("create");
             Assert.AreEqual(expected, actual);
         }
@@ -309,24 +309,24 @@ namespace database
             actual = DbInterpretter.Execute("Select * from tab");
             Assert.AreEqual(expected, actual);
             expected = "Ok";
-            actual = DbInterpretter.Execute("Insert into tab (col1, col2) values (content1, content2)");
+            actual = DbInterpretter.Execute("Insert into tab (col1, col2) values ('content1', 'content2')");
             Assert.AreEqual(expected, actual);
 
-            expected = "result:\n    col1     col2";
-            actual = DbInterpretter.Execute("Select * from tab where col1!='c2'");
-           // Assert.AreEqual(expected, actual);
+            expected = "result:\ncol1 col2";
+            actual = DbInterpretter.Execute("Select * from tab where col1!='content1'");
+            Assert.AreEqual(expected, actual);
 
-            expected = "result:\n    col1     col2";
+            expected = "result:\ncol1 col2";
             actual = DbInterpretter.Execute("Select * from tab where col1=='content12'");
-           // Assert.AreEqual(expected, actual);
+            Assert.AreEqual(expected, actual);
 
-            expected = "result:\n    col1     col2";
+            expected = "result:\ncol1 col2";
             actual = DbInterpretter.Execute("Select * from tab where col1 startswith 'c2'");
-          //  Assert.AreEqual(expected, actual);
+            Assert.AreEqual(expected, actual);
 
-            expected = "result:\n    col1     col2";
+            expected = "result:\ncol1 col2";
             actual = DbInterpretter.Execute("Select * from tab where col1 endswith '12'");
-           // Assert.AreEqual(expected, actual);
+            Assert.AreEqual(expected, actual);
 
         }
     }
@@ -342,6 +342,14 @@ namespace database
             String actual = DbInterpretter.Execute("help -h");
             Assert.AreEqual(expected, actual);
         }
+
+        [Test]
+        public void ExecuteHelpNotHelp()
+        {
+            String actual = DbInterpretter.Execute("help");
+            Assert.Greater(actual.Length, 0);
+
+        } 
     }
 
     [TestFixture]
@@ -363,7 +371,7 @@ namespace database
             String actual = DbInterpretter.Execute("use unitTestingDB");
             Assert.AreEqual(expected, actual);
             expected = "Database unitTestingDB saved.";
-            actual = DbInterpretter.Execute("save ");
+            actual = DbInterpretter.Execute("save");
             Assert.AreEqual(expected, actual);
         }
 
@@ -374,7 +382,7 @@ namespace database
             String actual = DbInterpretter.Execute("use unitTestingDB");
             Assert.AreEqual(expected, actual);
             expected = "Database unitTestingDB saved.";
-            actual = DbInterpretter.Execute("save D:\\");
+            actual = DbInterpretter.Execute("save");
             Assert.AreEqual(expected, actual);
         }
 
@@ -385,7 +393,7 @@ namespace database
             String actual = DbInterpretter.Execute("use unitTestingDB");
             Assert.AreEqual(expected, actual);
             expected = "Database unitTestingDB saved.";
-            actual = DbInterpretter.Execute("save D:\\ CSV");
+            actual = DbInterpretter.Execute("save D:\\Facultate_Master\\ISS\\sem2\\CSS\\Project\\CSS-database\\database\\bin\\Debug\\csv CSV");
             Assert.AreEqual(expected, actual);
         }
     }
@@ -458,6 +466,17 @@ namespace database
             actual = DbInterpretter.Execute("update");
             Assert.AreEqual(expected, actual);
         }
+        [Test]
+        public void UpdateWithParamsTest()
+        {
+            DbInterpretter.Execute("use unitTestingDB");
+            DbInterpretter.Execute("create tab (col1, col2)");
+            DbInterpretter.Execute("Insert into tab (col1, col2) values (content1, content2)");
+
+            String expected = "Ok";
+            String actual = DbInterpretter.Execute("update tab set col2='new' where col1=='content1'");
+            Assert.AreEqual(expected, actual);
+        }
     }
 
     [TestFixture]
@@ -466,8 +485,8 @@ namespace database
         [Test]
         public void DefaultFormatEncodeTest1()
         {
-            String expected = "";
-            String actual = new DefaultFormatConverter().Encode(null);
+            String expected = "0||";
+            String actual = new DefaultFormatConverter().Encode(new string[] {"" });
             Assert.AreEqual(expected, actual);
         }
 
@@ -493,15 +512,15 @@ namespace database
         public void CSVEncodeTest1()
         {
             String expected = "";
-            String actual = new CSVformatConverter().Encode(null);
+            String actual = new CSVformatConverter().Encode(new string[] { "" });
             Assert.AreEqual(expected, actual);
         }
 
         [Test]
         public void CSVEncodeTest2()
         {
-            String expected = "";
-            string[] parameters = { };
+            String expected = "str1;str2";
+            string[] parameters = {"str1", "str2" };
             String actual = new CSVformatConverter().Encode(parameters);
             Assert.AreEqual(expected, actual);
         }
@@ -544,15 +563,15 @@ namespace database
         [Test]
         public void CSVDecodeTest1()
         {
-            string[] expected = { };
-            string[] actual = new CSVformatConverter().Decode(null);
+            string[] expected = {"str1", "str2" };
+            string[] actual = new CSVformatConverter().Decode("str1;str2");
             Assert.AreEqual(expected, actual);
         }
 
         [Test]
         public void CSVDecodeTest2()
         {
-            string[] expected = { };
+            string[] expected = { ""};
             string[] actual = new CSVformatConverter().Decode("");
             Assert.AreEqual(expected, actual);
         }

@@ -351,7 +351,7 @@ namespace database
         }
         static Predicate<TableLine> parseCondition(string strCond)
         {
-            if (strCond == "") return (x => true);
+            //if (strCond == "") return (x => true);
 
             string[] aAssign = new Regex($"{lValue}|{rValue}|{logicOp}").Matches(strCond).Cast<Match>().Select(x => x.Value).ToArray();
             string
@@ -359,20 +359,20 @@ namespace database
                 op = aAssign[1],
                 rVal = aAssign[2];
             bool rValIsStr = (rVal[0] == strSep);
-            if (!rValIsStr)
-            {
-                return (x => false);
-            }
             rVal = rVal.Trim(strSep);
             switch (op)
             {
                 case "==":
+                    if (rValIsStr) return l => l[lVal] == (rVal);
                     return l => l[lVal] == (l[rVal]);
-                case "!=":   
+                case "!=":
+                    if (rValIsStr) return l => l[lVal] != rVal;
                     return l => l[lVal] != l[rVal];
                 case " startswith ":
+                    if (rValIsStr) return l => l[lVal].StartsWith(rVal);
                     return l => l[lVal].StartsWith(l[rVal]);
                 case " endswith ":
+                    if (rValIsStr) return l => l[lVal].EndsWith(rVal);
                     return l => l[lVal].EndsWith(l[rVal]);
             }
             return (x => false);
