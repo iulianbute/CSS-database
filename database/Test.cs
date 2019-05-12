@@ -579,4 +579,22 @@ namespace database
 
         }
     }
+
+    [TestFixture]
+    public class TableExceptionTest
+    {
+        [Test]
+        public void TableExceptionTest1()
+        {
+            Table.TableException dex = Assert.Throws<Table.TableException>(delegate { throw new Table.TableException("Done"); });
+            Assert.That(dex.Message, NUnit.Framework.Is.EqualTo("Done"));
+        }
+
+        [Test]
+        public void TableLineExceptionTest1()
+        {
+            TableLine.TableLineException dex = Assert.Throws<TableLine.TableLineException>(delegate { throw new TableLine.TableLineException("Done"); });
+            Assert.That(dex.Message, NUnit.Framework.Is.EqualTo("Done"));
+        }
+    }
 }
