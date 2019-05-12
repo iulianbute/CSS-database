@@ -215,6 +215,26 @@ namespace database
             Console.WriteLine(actual);
             Assert.AreEqual(expected, actual);
         }
+
+        [Test]
+        public void SelectWithWhereTest()
+        {
+            String expected = "Database unitTestingDB set active as empty. you can try to restore.";
+            String actual = DbInterpretter.Execute("use unitTestingDB");
+            Assert.AreEqual(expected, actual);
+            expected = "Ok";
+            actual = DbInterpretter.Execute("create tab (col1, col2)");
+            Assert.AreEqual(expected, actual);
+            expected = "result:\ncol1 col2";
+            actual = DbInterpretter.Execute("Select * from tab");
+            Assert.AreEqual(expected, actual);
+            expected = "Ok";
+            actual = DbInterpretter.Execute("Insert into tab (col1, col2) values (content1, content2)");
+            Assert.AreEqual(expected, actual);
+            expected = "result:\n    col1     col2\ncontent1 content2";
+            actual = DbInterpretter.Execute("Select * from tab where col1=='content1' and col2 endswith 'nt2'");
+            Assert.AreEqual(expected, actual);
+        }
     }
 
     [TestFixture]
@@ -461,7 +481,10 @@ namespace database
         public void addLineTest1()
         {
             string[] cols = { "col1", "col2", "col3" };
-            Table testTable1 = new Table("testTable", new ColumnNames(cols));
+            ColumnNames colNames = new ColumnNames(cols);
+            Assert.AreEqual(colNames.ToString(), "col1 col2 col3");
+            Assert.AreNotEqual(colNames.ToString(), "col1 col2 col33");
+            Table testTable1 = new Table("testTable", colNames);
             string[] tableLine = new string[] { "col1Content", "col2Content", "col3Content" };
             testTable1.AddLine(tableLine);
             String expected = "testTable:\n       col1        col2        col3\ncol1Content col2Content col3Content";
@@ -488,6 +511,34 @@ namespace database
             mockFactory.VerifyAllExpectationsHaveBeenMet();
             Assert.AreEqual(saved, true);
             Assert.AreEqual(testTable1.ToString(), testTable2.ToString());
+        }
+    }
+
+    [TestFixture]
+    public class RunTests
+    {
+        [Test]
+        public void ConsoleInterfaceTest()
+        {
+            DbInterpretter.isRunning = false;
+            string[] init = {
+                "use testDB",
+                "restore",
+                "select * from table1",
+                };
+            DB_ConsoleInterface.Run(init);
+        }
+
+        [Test]
+        public void WindowInterfaceTest()
+        {
+            DbInterpretter.isRunning = true;
+            string[] init = {
+                "use testDB",
+                "restore",
+                "select * from table1",
+                };
+            DB_WindowInterface.Run(init);
         }
     }
 }
