@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -11,6 +12,7 @@ using System.Windows.Forms;
 
 namespace database
 {
+    [ExcludeFromCodeCoverage]
     public partial class DbInterface : Form
     {
         public DbInterface(string[] init)

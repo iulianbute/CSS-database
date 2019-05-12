@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Diagnostics.CodeAnalysis;
 
 namespace database
 {
@@ -51,7 +52,7 @@ namespace database
                     result.Add(line.Substring(sepPos + 1, len));
                     line = line.Substring(sepPos + 1 + len + 1);
                 }
-                catch { }
+                catch { return null; }
             return result.ToArray();
         }
     }
@@ -622,6 +623,7 @@ namespace database
         }
     }
 
+    [ExcludeFromCodeCoverage]
     public class DB_ConsoleInterface
     {
         public static void Run(string[] init)
@@ -635,6 +637,7 @@ namespace database
             }
         }
     }
+    [ExcludeFromCodeCoverage]
     public class DB_WindowInterface
     {
         public static void Run(string[] init)

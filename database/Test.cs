@@ -1,10 +1,12 @@
 ﻿using System;
 using NUnit.Framework;
 using NMock;
+using System.Diagnostics.CodeAnalysis;
 
 namespace database
 {
     [TestFixture]
+    [ExcludeFromCodeCoverage]
     public class ByeTests
     {
         [Test]
@@ -26,6 +28,7 @@ namespace database
     }
 
     [TestFixture]
+    [ExcludeFromCodeCoverage]
     public class CreateTests
     {
         [Test]
@@ -71,6 +74,7 @@ namespace database
     }
 
     [TestFixture]
+    [ExcludeFromCodeCoverage]
     public class UseTests
     {
         [Test]
@@ -99,6 +103,7 @@ namespace database
     }
 
     [TestFixture]
+    [ExcludeFromCodeCoverage]
     public class DropTests
     {
         [Test]
@@ -139,6 +144,7 @@ namespace database
     }
 
     [TestFixture]
+    [ExcludeFromCodeCoverage]
     public class DeleteTests
     {
         [Test]
@@ -162,6 +168,7 @@ namespace database
     }
 
     [TestFixture]
+    [ExcludeFromCodeCoverage]
     public class SelectTests
     {
         [Test]
@@ -352,6 +359,7 @@ namespace database
 
 
     [TestFixture]
+    [ExcludeFromCodeCoverage]
     public class HelpTests
     {
         [Test]
@@ -372,6 +380,7 @@ namespace database
     }
 
     [TestFixture]
+    [ExcludeFromCodeCoverage]
     public class SaveTests
     {
         [Test]
@@ -419,6 +428,7 @@ namespace database
     }
 
     [TestFixture]
+    [ExcludeFromCodeCoverage]
     public class RestoreTests
     {
         [Test]
@@ -443,6 +453,7 @@ namespace database
     }
 
     [TestFixture]
+    [ExcludeFromCodeCoverage]
     public class InsertTests
     {
         [Test]
@@ -466,6 +477,7 @@ namespace database
     }
 
     [TestFixture]
+    [ExcludeFromCodeCoverage]
     public class UpdateTests
     {
         [Test]
@@ -500,6 +512,7 @@ namespace database
     }
 
     [TestFixture]
+    [ExcludeFromCodeCoverage]
     public class ConvertorTests
     {
         [Test]
@@ -607,6 +620,7 @@ namespace database
     }
 
     [TestFixture]
+    [ExcludeFromCodeCoverage]
     public class TableTests
     {
         private MockFactory mockFactory;
@@ -666,6 +680,7 @@ namespace database
         }
     }
     [TestFixture]
+    [ExcludeFromCodeCoverage]
     public class RunTests
     {
         [Test]
@@ -694,6 +709,7 @@ namespace database
     }
 
     [TestFixture]
+    [ExcludeFromCodeCoverage]
     public class ColumnNamesTest
     {
         [Test]
@@ -732,6 +748,7 @@ namespace database
     }
 
     [TestFixture]
+    [ExcludeFromCodeCoverage]
     public class TableExceptionTest
     {
         [Test]
@@ -750,6 +767,7 @@ namespace database
     }
 
     [TestFixture]
+    [ExcludeFromCodeCoverage]
     public class TestMainCode
     {
         [Test]
@@ -768,6 +786,7 @@ namespace database
     }
 
     [TestFixture]
+    [ExcludeFromCodeCoverage]
     public class TableTest
     {
         [Test]
@@ -777,10 +796,21 @@ namespace database
             ColumnNames columnName1 = new ColumnNames(numeCol1);
 
             Table testTable = new Table("testTable", columnName1);
+            testTable.Add(new TableLine(columnName1).SetContent(new string[] {"t1", "t2", "t3"}));
             Table result = testTable.Select(columnName1);
+            Assert.AreEqual(result.ToString(), "result:\ncol11 col12 col13\n   t1    t2    t3");
+        }
 
-            Assert.AreEqual(result.ToString(), "result:\ncol11 col12 col13");
+        [Test]
+        public void TestTableToString()
+        {
+            string[] numeCol1 = { "col11", "col12", "col13" };
+            ColumnNames columnName1 = new ColumnNames(numeCol1);
 
+            Table testTable = new Table("testTable", columnName1);
+            testTable.Add(new TableLine(columnName1).SetContent(new string[] { "t1", "t2", "t3" }));
+            Table result = testTable.Select(columnName1);
+            Assert.AreEqual(testTable[0].ToString(), "t1 t2 t3");
         }
 
         [Test]
@@ -789,9 +819,83 @@ namespace database
             Table.TableException dex = Assert.Throws<Table.TableException>(delegate { Table.check(false, "DoneTesting"); });
             Assert.That(dex.Message, NUnit.Framework.Is.EqualTo("DoneTesting"));
         }
+
+        [Test]
+        public void TestTableAddLine()
+        {
+            string[] numeCol1 = { "col11", "col12", "col13" };
+            ColumnNames columnName1 = new ColumnNames(numeCol1);
+
+            TableLine customTableLine = new TableLine(null).SetContent(new string[] {"t1", "t2", "t3"});
+            Table customTable = new Table("customTable", columnName1);
+            Assert.AreEqual(customTable.AddLine(customTableLine).ToString(), "customTable:\ncol11 col12 col13\n   t1    t2    t3"); 
+
+        }
+
+        [Test]
+        public void TestTableSave()
+        {
+            string[] numeCol1 = { "col11", "col12", "col13" };
+            ColumnNames columnName1 = new ColumnNames(numeCol1);
+
+            Table testTable = new Table("testTable", columnName1);
+            Table.TableException dex = Assert.Throws <Table.TableException>(delegate { testTable.Save("X:\\"); });
+            Assert.Greater(dex.Message.Length, 0);
+
+        }
+
+        [Test]
+        public void TestTableRestore()
+        {
+            string[] numeCol1 = { "col11", "col12", "col13" };
+            ColumnNames columnName1 = new ColumnNames(numeCol1);
+
+            Table testTable = new Table("testTable", columnName1);
+            Table.TableException dex = Assert.Throws<Table.TableException>(delegate { testTable.Restore("X:\\"); });
+            Assert.Greater(dex.Message.Length, 0);
+
+        }
+
+        [Test]
+        public void TestTableToString2()
+        {
+            string[] numeCol1 = { "col11", "col12", "col12345678901234568789125297547328573298579832759832759832798573987539827598327598732985739875983729857398573982759832759873298753298759832798" };
+            ColumnNames columnName1 = new ColumnNames(numeCol1);
+
+            Table testTable = new Table("testTable", columnName1);
+            Assert.AreEqual(testTable.ToString(), "testTable:\ncol11 col12 col123456789012345687891252975");
+        }
+
+        [Test]
+        public void TestAddLines()
+        {
+            string[] numeCol1 = { "col11", "col12", "col13" };
+            ColumnNames columnName1 = new ColumnNames(numeCol1);
+
+            Table testTable = new Table("testTable", columnName1);
+
+            string[] numeCol2 = { "col11", "col12" };
+            ColumnNames columnName2 = new ColumnNames(numeCol2);
+            TableLine tableLine = new TableLine(columnName2);
+
+            Assert.AreEqual(testTable.AddLine(tableLine).ToString(), "testTable:\ncol11 col12 col13\n                 ");
+        }
+
+        [Test]
+        public void TestWhere()
+        {
+            string[] numeCol1 = { "col11", "col12", "col13" };
+            ColumnNames columnName1 = new ColumnNames(numeCol1);
+
+            Table testTable = new Table("testTable", columnName1);
+            Table.TableException dex = Assert.Throws<Table.TableException>(delegate { testTable.Where(null); });
+            Assert.Greater(dex.Message.Length, 0);
+        }
+
     }
 
     [TestFixture]
+    [ExcludeFromCodeCoverage]
     public class DbInterpreterTests
     {
         [Test]
@@ -806,6 +910,38 @@ namespace database
                 actual = DbInterpretter.Execute("restore");
                 Assert.AreEqual("Database unitTestingDB restored.", actual);
         }
+
+        [Test]
+        public void SaveCommandTest()
+        {
+            DbInterpretter.Execute("use unitTestingDB");
+            DbInterpretter.Execute("create tab (col1, col2)");
+            DbInterpretter.Execute("Insert into tab (col1, col2) values (content1, content2)");
+            //Assert.AreEqual(DbInterpretter.Execute("save d:\\"), "Database unitTestingDB saved.");
+            Assert.AreEqual(DbInterpretter.Execute("save tab d:\\"), "Table tab saved.");
+        }
     }
 
+    [TestFixture]
+    [ExcludeFromCodeCoverage]
+    public class DataBaseTests
+    {
+        [Test]
+        public void TestSave1()
+        {
+            Database db = new Database("tempName");
+            db.Add(new Table("temp", new ColumnNames(new string[] { "Ingrid", "Uli", "Valeriu", "Gigi" })));
+            Database.DatabaseException dex = Assert.Throws<Database.DatabaseException>(delegate { db.Save("X:\\"); });
+           // db.Save("D:\\Facultate_Master\\ISS\\sem2\\CSS\\Project\\CSS-database\\database\\bin\\Debug\\.DB");
+            Assert.That(dex.Message, NUnit.Framework.Is.EqualTo("Save to X:\\ failed!"));
+        }
+
+        [Test]
+        public void TestRestore()
+        {
+            Database db = new Database("tempName");
+            Database.DatabaseException dex = Assert.Throws<Database.DatabaseException>(delegate { db.Restore("D:\\Facultate_Master\\ISS\\sem2\\CSS\\Project\\CSS-database\\database\\bin\\Debug\\tempDatabase"); });
+            Assert.That(dex.Message, NUnit.Framework.Is.EqualTo("Can't add table from D:\\Facultate_Master\\ISS\\sem2\\CSS\\Project\\CSS-database\\database\\bin\\Debug\\tempDatabase\\temp"));
+        }
+    }
 }
