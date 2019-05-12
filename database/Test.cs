@@ -235,6 +235,7 @@ namespace database
             actual = DbInterpretter.Execute("Select * from tab where col1=='content1' and col2 endswith 'nt2'");
             Assert.AreEqual(expected, actual);
         }
+
     }
 
     [TestFixture]
@@ -595,6 +596,24 @@ namespace database
         {
             TableLine.TableLineException dex = Assert.Throws<TableLine.TableLineException>(delegate { throw new TableLine.TableLineException("Done"); });
             Assert.That(dex.Message, NUnit.Framework.Is.EqualTo("Done"));
+        }
+    }
+
+    [TestFixture]
+    public class TestMainCode
+    {
+        [Test]
+        public void TestProgram()
+        {
+            bool ok = false;
+            try
+            {
+                string[] voidString = { "" };
+                Program.Main(voidString);
+                ok = true;
+            }
+            catch {}
+            Assert.AreEqual(ok, true);
         }
     }
 }

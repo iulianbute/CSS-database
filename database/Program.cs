@@ -643,13 +643,14 @@ namespace database
 
     class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             DbInterpretter.isRunning = true;
             string[] init = {
                 "use testDB",
                 "restore",
                 "select * from table1",
+                "bye",
                 };
             DB_ConsoleInterface.Run(init);
             //DB_WindowInterface.Run(init);
