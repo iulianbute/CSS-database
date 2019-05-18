@@ -691,6 +691,7 @@ namespace database
                 "use testDB",
                 "restore",
                 "select * from table1",
+                "bye",
                 };
             DB_ConsoleInterface.Run(init);
         }
@@ -703,6 +704,7 @@ namespace database
                 "use testDB",
                 "restore",
                 "select * from table1",
+                "bye",
                 };
             DB_WindowInterface.Run(init);
         }

@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
 
 namespace database
 {
@@ -21,7 +22,8 @@ namespace database
             MethodBase method = new StackFrame(1).GetMethod();
             var type = method.DeclaringType.ToString();
             var name = method.Name;
-
+            Contract.Ensures(type != null, "Debug.Write, type == null");
+            Contract.Ensures(name != null, "Debug.Write, name == null");
             if (on) Console.Out.WriteLine($"[{type}][{name}]" + msg);
         }
     }
@@ -36,17 +38,20 @@ namespace database
         static char separator = '|';
         public string Encode(string[] line)
         {
-            Trace.Assert(line != null, "line == null");
+            Contract.Requires(line != null, "line == null");
             string result = "";
+            Contract.Invariant(line.Length >= 0);
             foreach (string e in line)
                 result += e.Length.ToString() + separator + e + separator;
+            Contract.Ensures(result != "", "DefaultFormatConverter.Encode, result == \"\"");
             return result;
         }
         public string[] Decode(string line)
         {
-            Trace.Assert(line != null, "line == null");
+            Contract.Requires(line != null, "line == null");
             List<string> result = new List<string>();
             int len = 0, sepPos = 0;
+            Contract.Invariant(line.Length > 0);
             while (line.Length > 0)
                 try
                 {
@@ -56,6 +61,8 @@ namespace database
                     line = line.Substring(sepPos + 1 + len + 1);
                 }
                 catch { return null; }
+            Contract.Ensures(result != null, "DefaultFormatConverter.Encode, result == null");
+            Contract.Ensures(result.Count != 0, "DefaultFormatConverter.Encode, result.Count == 0");
             return result.ToArray();
         }
     }
@@ -65,24 +72,36 @@ namespace database
         public string Encode(string[] line)
         {
             Trace.Assert(line != null, "line == null");
-            return String.Join(separator.ToString(), line);
+            string toReturn = String.Join(separator.ToString(), line);
+            Contract.Ensures(toReturn != null, "CSVformatConverter.Encode, toReturn == null");
+            return toReturn;
         }
         public string[] Decode(string line)
         {
             Trace.Assert(line != null, "line == null");
-            return line.Split(separator);
+            string[] toReturn = line.Split(separator);
+            Contract.Ensures(toReturn != null, "CSVformatConverter.Decode, toReturn == null");
+            return toReturn;
         }
     }
 
     public class ColumnNames : Dictionary<string, int>
     {
-        public ColumnNames(string[] names) { for (int i = 0; i < names.Length; i++) Add(names[i], i); }
+        public ColumnNames(string[] names) { Contract.Requires(names != null, "ColumnNames names == null"); for (int i = 0; i < names.Length; i++) Add(names[i], i); Contract.Ensures(this.Count > 0, "ColumnNames this.Count == 0"); }
         public string[] ToArray()
         {
+            Contract.Requires(Keys != null, "ColumnNames.ToArray Keys == null");
+            Contract.Requires(Keys.Count != 0, "ColumnNames.ToArray Keys.Count == 0");
             List<string> result = new List<string>();
-            for (int i = 0; i++ < Keys.Count; result.Add("")) ;
+            for (int i = 0; i++ < Keys.Count; result.Add("")) Contract.Invariant(i >= 0) ;
+            Contract.Invariant(Keys.Count >= 0);
             foreach (string k in Keys)
+            {
+                Contract.Invariant(k != null);
                 result[this[k]] = k;
+            }
+            Contract.Ensures(result != null, "ColumnNames.ToArray result == null");
+            Contract.Ensures(result.Count != 0, "ColumnNames.ToArray result.Count == 0");
             return result.ToArray();
         }
         public bool Equals(ColumnNames oth)
@@ -95,40 +114,51 @@ namespace database
         public bool AllIn(ColumnNames oth)
         {
             Trace.Assert(oth != null, "Column Names == null");
+            Contract.Invariant(Keys.Count >= 0);
             foreach (string k in Keys)
+            {
+                Contract.Invariant(k != null);
                 if (!oth.Keys.Contains(k))
                     return false;
+            }
             return true;
         }
-        new public string ToString() { return String.Join(" ", ToArray()); }
+        new public string ToString() { string toReturnString = String.Join(" ", ToArray()); Contract.Ensures(toReturnString != String.Empty, "ColumnNames.ToString toReturnString is empty"); return toReturnString; }
     }
     public class TableLine : List<string>
     {
         public class TableLineException : Exception { public TableLineException(string msg) : base(msg) { } }
-        public static void check(bool cond, string except) { if (!cond) throw new TableLineException(except); }
+        public static void check(bool cond, string except) { Contract.Requires(except != null, "TableLine.check, except == null"); Contract.Requires(except != "", "TableLine.check, except == \"\""); if (!cond) throw new TableLineException(except); }
 
         public ColumnNames columnName;
 
-        public TableLine(ColumnNames names) { columnName = names; }
+        public TableLine(ColumnNames names) { Contract.Requires(names != null, "TableLine.TableLine names == null"); columnName = names; Contract.Ensures(columnName != null, "TableLine.TableLine names == null"); }
         public TableLine SetContent(string[] content)
         {
+            Contract.Requires(content != null, "TableLine.SetContent content == null");
+            Contract.Requires(content.Length != columnName.Count, "TableLine.SetContent content.Length == columnName.Count");
             check(columnName == null || content.Length == columnName.Count, "Can't set content to line");
             Clear();
             AddRange(content);
+            Contract.Ensures(this.Count > 0, "TableLine this.Count < 0");
             return this;
         }
         public string this[string aFieldName]
         {
             get
             {
+                Contract.Requires(columnName == null, "TableLine.this.get columnName == null");
+                Contract.Requires(columnName.Keys.Contains(aFieldName) != false, "TableLine.this.get columnName.Keys.Contains(aFieldName) is false");
                 check(columnName != null, "No column names are set yet");
                 check(columnName.Keys.Contains(aFieldName), "Invalid column name: " + aFieldName);
                 return this[this.columnName[aFieldName]];
             }
             set
             {
+                Contract.Requires(columnName == null, "TableLine.this.set columnName == null");
                 check(columnName != null, "No column names are set yet");
                 this[this.columnName[aFieldName]] = value;
+                Contract.Ensures(this[this.columnName[aFieldName]] == value, "TableLine.this.get this[this.columnName[aFieldName]] != value");
             }
         }
         public TableLine Select(ColumnNames selColNames)
@@ -137,17 +167,20 @@ namespace database
             List<string> selContent = new List<string>();
             foreach (string colName in selColNames.ToArray())
             {
+                Contract.Invariant(colName != null);
                 selContent.Add(this[colName]);
             }
+            Contract.Ensures(selContent != null, "TableLine.Select selContent == null");
+            Contract.Ensures(selContent.Count > 0, "TableLine.Select selContent.Count == 0");
             return new TableLine(selColNames).SetContent(selContent.ToArray());
         }
-        new public string ToString() { return String.Join(" ", this); }
+        new public string ToString() { Contract.Ensures(this != null); string toReturnString = String.Join(" ", this); Contract.Ensures(toReturnString != String.Empty, "TableLine.toString toReturnString is null"); return toReturnString; }
     }
 
     public class Table : List<TableLine>
     {
         public class TableException : Exception { public TableException(string msg) : base(msg) { } }
-        public static void check(bool cond, string except) { if (!cond) throw new TableException(except); }
+        public static void check(bool cond, string except) { Contract.Requires(except != null);  Contract.Requires(except != ""); if (!cond) throw new TableException(except); }
         public static int maxPrintLen = 30;
 
         public string name;
@@ -159,34 +192,47 @@ namespace database
             Trace.Assert(someColumnNames != null, "Column Names == null");
             name = aName;
             columnName = someColumnNames;
+            Contract.Ensures(name != null);
+            Contract.Ensures(columnName != null);
         }
         public Table(string filePath, IFormatConverter conv)
         {
-            Trace.Assert(conv != null, "Converter == null");
+            //Trace.Assert(conv != null, "Converter == null");
             Trace.Assert(filePath != null, "tableName == null");
             name = Path.GetFileName(filePath);
+            Contract.Ensures(name != null);
             Restore(filePath, conv);
         }
         public Table AddLine(TableLine aLine)
         {
+            Contract.Requires(aLine != null);
             if (aLine.columnName == null && columnName.Count == aLine.Count)
                 return AddLine(aLine.ToArray());
             check(aLine.columnName.AllIn(columnName), "Can't add line to table");
 
             List<string> valList = new List<string>();
             string[] myColumns = columnName.ToArray();
+            Contract.Invariant(myColumns.Length >= 0);
             for (int i = 0; i < myColumns.Length; i++)
             {
+                Contract.Invariant(i >= 0);
                 try { valList.Add(aLine[myColumns[i]]); }
                 catch { valList.Add(""); }
             }
-            return AddLine(valList.ToArray());
+            Contract.Ensures(valList != null);
+
+            Table responseTable = AddLine(valList.ToArray());
+            Contract.Ensures(responseTable != null);
+            return responseTable;
         }
         public Table AddLine(string[] aLineContent)
         {
             Trace.Assert(aLineContent != null, "aLineContent == null");
             check(columnName.Count == aLineContent.Length, "Can't add line");
-            Add(new TableLine(columnName).SetContent(aLineContent));
+            Contract.Requires(columnName != null);
+            TableLine customTableLine = new TableLine(columnName).SetContent(aLineContent);
+            Add(customTableLine);
+            Contract.Ensures(this.Contains(customTableLine) != false);
             return this;
         }
         public bool Save(string dirPath, IFormatConverter conv = null)
@@ -216,16 +262,22 @@ namespace database
                 Clear();
                 columnName = new ColumnNames(conv.Decode(file.ReadLine()));
                 while ((line = file.ReadLine()) != null)
+                {
+                    Contract.Invariant(line != null);
                     AddLine(conv.Decode(line.Trim()));
+                }
             }
             catch (Exception e) { Debug.Write("Error restoring:" + name); throw new TableException(e.ToString()); }
             return true;
         }
         public Table Where(Predicate<TableLine> lineIsValid)
         {
+            Contract.Requires(lineIsValid != null);
             Table result = new Table("result", columnName);
             try { result.AddRange(this.FindAll(lineIsValid)); }
             catch (Exception e) { throw new TableException(e.ToString()); }
+            Contract.Ensures(result != null);
+            Contract.Ensures(result.Count > 0);
             return result;
         }
         public Table Select(ColumnNames newTableColumn)
@@ -234,8 +286,11 @@ namespace database
             Table result = new Table("result", newTableColumn);
             for (int i = 0; i < Count; i++)
             {
+                Contract.Invariant(i > 0);
                 result.AddLine(this[i].Select(newTableColumn));
             }
+            Contract.Ensures(result != null);
+            Contract.Ensures(result.Count > 0);
             return result;
         }
         new public string ToString()
@@ -259,14 +314,15 @@ namespace database
             string strResult = "";
             for (int ln = 0; ln < result.Count; ln++)
                 strResult += "\n" + String.Join(" ", result[ln]);
-
+            Contract.Ensures(strResult != "");
+            Contract.Ensures(name != "");
             return name + ":" + strResult;
         }
     }
     public class Database : Dictionary<String, Table>
     {
         public class DatabaseException : Exception { public DatabaseException(string msg) : base(msg) { } }
-        public static void check(bool cond, string except) { if (!cond) throw new DatabaseException(except); }
+        public static void check(bool cond, string except) { Contract.Requires(except != null); Contract.Requires(except != "");  if (!cond) throw new DatabaseException(except); }
         public static string dbPrefix = "DB.";
 
         public string name;
@@ -277,17 +333,20 @@ namespace database
                 .Where(d => Path.GetFileName(d).StartsWith(dbPrefix))
                 .Select(d => Path.GetFileName(d).Substring(dbPrefix.Length)).ToArray();
         }
-        public string GetDirName() { return dbPrefix + name; }
+        public string GetDirName() { Contract.Requires(dbPrefix != ""); Contract.Requires(name != "");  return dbPrefix + name; }
         public Database(string dbName)
         {
             Trace.Assert(dbName != null, "dbName == null");
             name = dbName;
+            Contract.Ensures(name != null);
         }
         public Database Add(Table t)
         {
             Trace.Assert(t != null, "table t == null");
             Debug.Write("Adding tb:" + t.name);
             Add(t.name, t);
+            Contract.Ensures(this.Count > 0);
+            Contract.Ensures(this.ContainsKey(t.name));
             return this;
         }
 
@@ -318,24 +377,38 @@ namespace database
             Clear();
             foreach (string tablePath in Directory.EnumerateFiles(srcPath))
             {
+                Contract.Invariant(tablePath != null);
+                Contract.Requires(tablePath != null);
+                Contract.Requires(tablePath != "");
                 try { Add(new Table(tablePath, conv)); }
                 catch { Debug.Write("Can't add table from " + tablePath); }
             }
+            Contract.Ensures(this != null);
+            Contract.Ensures(this.Count > 0);
             return true;
         }
         new public bool Remove(string t)
         {
+            Contract.Requires(t != "");
+            Contract.Requires(t != null);
             check(Keys.Contains(t), "Table not in db.");
-            return base.Remove(t);
+            bool response = base.Remove(t);
+            Contract.Ensures(base.ContainsKey(t) == false);
+            return response;
+
         }
         new public Table this[string tName]
         {
             get
             {
+                Contract.Requires(tName != null);
+                Contract.Requires(tName != "");
                 check(Keys.Contains(tName), "No table named " + tName);
-                return base[tName];
+                Table toReturn = base[tName];
+                Contract.Ensures(toReturn != null);
+                return toReturn;
             }
-            set { Add(tName, value); }
+            set { Contract.Requires(tName != null); Contract.Requires(tName != ""); Contract.Requires(value != null); Add(tName, value);  Contract.Ensures(this.ContainsKey(tName)); }
         }
     }
 
@@ -370,6 +443,9 @@ namespace database
 
         static Predicate<TableLine> CombineCond(Predicate<TableLine> fCond, string oper, Predicate<TableLine> sCond)
         {
+            Contract.Requires(fCond != null);
+            Contract.Requires(oper != null);
+            Contract.Requires(sCond != null);
             switch (oper.Trim())
             {
                 case "or": return x => fCond(x) || sCond(x);
@@ -412,8 +488,12 @@ namespace database
             string[] myConditions = new Regex($"{condition}|{condOp}").Matches(strCond).Cast<Match>().Select(x => x.Value).ToArray();
 
             Predicate<TableLine> finalCond = parseCondition(myConditions[0]);
-            for (int pos = 2; pos<myConditions.Length; pos+=2)
-                finalCond = CombineCond(finalCond, myConditions[pos-1], parseCondition(myConditions[pos]));
+            for (int pos = 2; pos < myConditions.Length; pos += 2)
+            {
+                Contract.Invariant(pos > 1);
+                finalCond = CombineCond(finalCond, myConditions[pos - 1], parseCondition(myConditions[pos]));
+            }
+            Contract.Ensures(finalCond != null);
             return finalCond;
         }
 
@@ -434,6 +514,8 @@ namespace database
             foreach (MethodInfo m in typeof(DbInterpretter).GetMethods()
                 .Where(mi => mi.Name.EndsWith("_Command")))
                 result += m.Invoke(null, new object[] { "-h" }) + "\n";
+            Contract.Ensures(result != null);
+            Contract.Ensures(result != "");
             return result;
         }
         public static string SAVE_Command(string param)
@@ -452,7 +534,9 @@ namespace database
             }
             if (param[1] == ':')
             {
+                Contract.Requires(conv != null);
                 currentDb.Save(param, conv);
+                Contract.Ensures(currentDb.name != null);
                 return "Database " + currentDb.name + " saved.";
             }
             int fSpacePos = param.IndexOf(' ');
@@ -461,7 +545,7 @@ namespace database
             string dstPath = param.Substring(fSpacePos).Trim();
             if (dstPath.Length > 0) currentDb[tbName].Save(dstPath, conv);
             else currentDb[tbName].Save(currentDb.GetDirName());
-
+            Contract.Requires(tbName != null);
             return "Table " + tbName + " saved.";
         }
         public static string RESTORE_Command(string param)
@@ -480,7 +564,9 @@ namespace database
             }
             if (param[1] == ':')
             {
+                Contract.Ensures(conv != null);
                 currentDb.Restore(param, conv);
+                Contract.Requires(currentDb.name != null);
                 return "Database " + currentDb.name + " restored.";
             }
             int fSpacePos = param.IndexOf(' ');
@@ -489,7 +575,7 @@ namespace database
             string dstPath = param.Substring(fSpacePos).Trim();
             if (dstPath.Length > 0) currentDb[tbName].Restore(dstPath, conv);
             else currentDb[tbName].Restore(Path.Combine(currentDb.GetDirName(), tbName));
-
+            Contract.Requires(tbName != null);
             return "Table " + tbName + " restored.";
         }
         public static string USE_Command(string param)
@@ -499,7 +585,7 @@ namespace database
                 return "Use DBname                    |-> Set the DBname database active (as empty)";
             check(param.Length == 0 || param.Split().Length > 0, "Invalid DBname");
             currentDb = new Database(param);
-
+            Contract.Requires(currentDb.name != null);
             return "Database " + currentDb.name + " set active as empty. you can try to restore.";
         }
         public static string DROP_Command(string param)
@@ -509,6 +595,8 @@ namespace database
                 return "Drop tbName                   |-> Drop table from current db";
             check(currentDb != noDb, "Not allowed");
             currentDb.Remove(param);
+            Contract.Requires(param != null);
+            Contract.Ensures(currentDb.ContainsKey(param) == false);
             return "Table " + param + " removed";
         }
         public static string CREATE_Command(string param)
@@ -529,8 +617,11 @@ namespace database
             List<string> columns = new List<string>();
             foreach (Match m in new Regex($"{term}").Matches(allFields))
                 columns.Add(m.Value.Trim(compSep));
-            currentDb[tableName] = new Table(tableName, new ColumnNames(columns.ToArray()));
-
+            Contract.Requires(tableName != null);
+            Contract.Requires(columns != null);
+            Table ct = new Table(tableName, new ColumnNames(columns.ToArray()));
+            currentDb[tableName] = ct;
+            Contract.Ensures(currentDb[tableName] == ct);
             return "Ok";
         }
         public static string INSERT_Command(string param)
@@ -556,8 +647,11 @@ namespace database
             foreach (Match m in new Regex($"{rValue}").Matches(values))
                 valuesList.Add(m.Value.Trim(strSep));
 
-            currentDb[tableName].AddLine(new TableLine(new ColumnNames(fieldsList.ToArray())).SetContent(valuesList.ToArray()));
-
+            Contract.Requires(valuesList != null);
+            Contract.Requires(fieldsList != null);
+            TableLine ctl = new TableLine(new ColumnNames(fieldsList.ToArray())).SetContent(valuesList.ToArray());
+            currentDb[tableName].AddLine(ctl);
+            Contract.Ensures(currentDb[tableName].Contains(ctl));
             return "Ok";
         }
         public static string UPDATE_Command(string param)
@@ -577,6 +671,7 @@ namespace database
             foreach (TableLine line in currentDb[tableName].Where(parseConditions(cond)))
                 foreach (Match m in new Regex($"{assign}").Matches(assigns))
                 {
+                    Contract.Invariant(line != null);
                     string[] aAssign = new Regex($"{lValue}|{rValue}").Matches(m.Value).Cast<Match>().Select(x => x.Value).ToArray();
                     if (aAssign[1][0] == strSep) line[aAssign[0].Trim(compSep)] = aAssign[1].Trim(strSep);
                     else line[aAssign[0].Trim(compSep)] = line[aAssign[1].Trim(compSep)];
@@ -597,7 +692,10 @@ namespace database
             string
                 tableName = matches.Groups["table"].Value,
                 cond = matches.Groups["condition"].Value;
-            currentDb[tableName].RemoveAll(parseConditions(cond));
+            Predicate<TableLine> pcond = parseConditions(cond);
+            Contract.Requires(pcond != null);
+            currentDb[tableName].RemoveAll(pcond);
+            Contract.Ensures(currentDb[tableName].FindAll(pcond).Count == 0);
 
             return "Ok";
         }
@@ -618,23 +716,33 @@ namespace database
                 whereCond = matches.Groups["condition"].Value;
 
             if (tableName.Equals("TABLE_NAMES", StringComparison.OrdinalIgnoreCase))
-                return String.Join("\n", currentDb.Keys);
+            {
+                String response = String.Join("\n", currentDb.Keys);
+                Contract.Ensures(response != null);
+                return response;
+            }
 
             if (allFields == "*")
-                return
-                    currentDb[tableName]
+            {
+                string resultS = currentDb[tableName]
                     .Where(parseConditions(whereCond))
                     .ToString();
+                Contract.Ensures(resultS != null);
+                return resultS;
+             
+            }
 
             List<string> fields = new List<string>();
             foreach (Match m in new Regex($"{term}").Matches(allFields))
                 fields.Add(m.Value.Trim('"', '\''));
 
-            return
-                currentDb[tableName]
+            string result = currentDb[tableName]
                 .Select(new ColumnNames(fields.ToArray()))
                 .Where(parseConditions(whereCond))
                 .ToString();
+            Contract.Ensures(result != null);
+            return result;
+                
         }
 
         public static string Execute(string textCommand)
@@ -647,6 +755,8 @@ namespace database
             parameters = textCommand.Substring(fSpacePos).Trim();
             try
             {
+                Contract.Requires(command != null);
+                Contract.Requires(parameters != null);
                 MethodInfo function = typeof(DbInterpretter).GetMethod(command + "_Command");
                 check(function != null, "Invalid command");
                 try { return (string)function.Invoke(null, new object[] { parameters }); }
@@ -694,6 +804,7 @@ namespace database
                 "use testDB",
                 "restore",
                 "select * from table1",
+                "bye",
                 };
             DB_ConsoleInterface.Run(init);
             //DB_WindowInterface.Run(init);
