@@ -17,6 +17,7 @@ namespace database
         public static bool on = true;
         public static void Write(string msg)
         {
+            Trace.Assert(msg != null, "MSG == null");
             MethodBase method = new StackFrame(1).GetMethod();
             var type = method.DeclaringType.ToString();
             var name = method.Name;
@@ -35,6 +36,7 @@ namespace database
         static char separator = '|';
         public string Encode(string[] line)
         {
+            Trace.Assert(line != null, "line == null");
             string result = "";
             foreach (string e in line)
                 result += e.Length.ToString() + separator + e + separator;
@@ -42,6 +44,7 @@ namespace database
         }
         public string[] Decode(string line)
         {
+            Trace.Assert(line != null, "line == null");
             List<string> result = new List<string>();
             int len = 0, sepPos = 0;
             while (line.Length > 0)
@@ -61,10 +64,12 @@ namespace database
         static char separator = ';';
         public string Encode(string[] line)
         {
+            Trace.Assert(line != null, "line == null");
             return String.Join(separator.ToString(), line);
         }
         public string[] Decode(string line)
         {
+            Trace.Assert(line != null, "line == null");
             return line.Split(separator);
         }
     }
@@ -82,12 +87,14 @@ namespace database
         }
         public bool Equals(ColumnNames oth)
         {
+            Trace.Assert(oth != null, "Column Names == null");
             foreach (bool eq in ToArray().Zip(oth.ToArray(), (f, s) => (f == s)))
                 if (!eq) return false;
             return true;
         }
         public bool AllIn(ColumnNames oth)
         {
+            Trace.Assert(oth != null, "Column Names == null");
             foreach (string k in Keys)
                 if (!oth.Keys.Contains(k))
                     return false;
@@ -126,6 +133,7 @@ namespace database
         }
         public TableLine Select(ColumnNames selColNames)
         {
+            Trace.Assert(selColNames != null, "Column Names == null");
             List<string> selContent = new List<string>();
             foreach (string colName in selColNames.ToArray())
             {
@@ -147,11 +155,15 @@ namespace database
 
         public Table(string aName, ColumnNames someColumnNames)
         {
+            Trace.Assert(aName != null, "tableName == null");
+            Trace.Assert(someColumnNames != null, "Column Names == null");
             name = aName;
             columnName = someColumnNames;
         }
         public Table(string filePath, IFormatConverter conv)
         {
+            Trace.Assert(conv != null, "Converter == null");
+            Trace.Assert(filePath != null, "tableName == null");
             name = Path.GetFileName(filePath);
             Restore(filePath, conv);
         }
@@ -172,12 +184,14 @@ namespace database
         }
         public Table AddLine(string[] aLineContent)
         {
+            Trace.Assert(aLineContent != null, "aLineContent == null");
             check(columnName.Count == aLineContent.Length, "Can't add line");
             Add(new TableLine(columnName).SetContent(aLineContent));
             return this;
         }
         public bool Save(string dirPath, IFormatConverter conv = null)
         {
+            Trace.Assert(dirPath != null, "dirPath == null");
             try
             {
                 Directory.CreateDirectory(dirPath);
@@ -193,6 +207,7 @@ namespace database
         }
         public bool Restore(string filePath, IFormatConverter conv = null)
         {
+            Trace.Assert(filePath != null, "dirPath == null");
             string line;
             try
             {
@@ -215,6 +230,7 @@ namespace database
         }
         public Table Select(ColumnNames newTableColumn)
         {
+            Trace.Assert(newTableColumn != null, "Column Names == null");
             Table result = new Table("result", newTableColumn);
             for (int i = 0; i < Count; i++)
             {
@@ -262,9 +278,14 @@ namespace database
                 .Select(d => Path.GetFileName(d).Substring(dbPrefix.Length)).ToArray();
         }
         public string GetDirName() { return dbPrefix + name; }
-        public Database(string dbName) { name = dbName; }
+        public Database(string dbName)
+        {
+            Trace.Assert(dbName != null, "dbName == null");
+            name = dbName;
+        }
         public Database Add(Table t)
         {
+            Trace.Assert(t != null, "table t == null");
             Debug.Write("Adding tb:" + t.name);
             Add(t.name, t);
             return this;
@@ -272,6 +293,7 @@ namespace database
 
         public bool Save(string destDir = "", IFormatConverter conv = null)
         {
+            Trace.Assert(destDir != null, "destDir == null");
             if (destDir.Length == 0) destDir = GetDirName();
             try
             {
@@ -289,6 +311,7 @@ namespace database
         }
         public bool Restore(string srcPath = "", IFormatConverter conv = null)
         {
+            Trace.Assert(srcPath != null, "srcPath == null");
             Debug.Write("Restoring db:" + name);
             if (srcPath.Length == 0) srcPath = GetDirName();
             check(Directory.Exists(srcPath), "Invalid db load path path:" + srcPath);
@@ -356,8 +379,7 @@ namespace database
         }
         static Predicate<TableLine> parseCondition(string strCond)
         {
-            //if (strCond == "") return (x => true);
-
+            Trace.Assert(strCond != null, "strCond == null");
             string[] aAssign = new Regex($"{lValue}|{rValue}|{logicOp}").Matches(strCond).Cast<Match>().Select(x => x.Value).ToArray();
             string
                 lVal = aAssign[0],
@@ -384,6 +406,7 @@ namespace database
         }
         static Predicate<TableLine> parseConditions(string strCond)
         {
+            Trace.Assert(strCond != null, "strCond == null");
             if (strCond == "") return (x => true);
 
             string[] myConditions = new Regex($"{condition}|{condOp}").Matches(strCond).Cast<Match>().Select(x => x.Value).ToArray();
@@ -396,6 +419,7 @@ namespace database
 
         public static string BYE_Command(string param)
         {
+            Trace.Assert(param != null, "param == null");
             if (param == "-h")
                 return "bye                           |-> quit";
             isRunning = false;
@@ -403,6 +427,7 @@ namespace database
         }
         public static string HELP_Command(string param)
         {
+            Trace.Assert(param != null, "param == null");
             if (param == "-h")
                 return "help                          |-> this help";
             string result = "";
@@ -413,6 +438,7 @@ namespace database
         }
         public static string SAVE_Command(string param)
         {
+            Trace.Assert(param != null, "param == null");
             if (param == "-h")
                 return "Save [path]                   |-> Saves the database to a provided or default path " +
                      "\nSave tableName [path] [CSV]   |-> Saves a table from current DB to a provided or default path";
@@ -440,6 +466,7 @@ namespace database
         }
         public static string RESTORE_Command(string param)
         {
+            Trace.Assert(param != null, "param == null");
             if (param == "-h")
                 return "Restore [path [CSV]]          |-> Restore the database from a provided or default path " +
                      "\nRestore tbName [path [CSV]]   |-> Restore a table from current DB from a provided or default path";
@@ -467,6 +494,7 @@ namespace database
         }
         public static string USE_Command(string param)
         {
+            Trace.Assert(param != null, "param == null");
             if (param == "-h")
                 return "Use DBname                    |-> Set the DBname database active (as empty)";
             check(param.Length == 0 || param.Split().Length > 0, "Invalid DBname");
@@ -476,6 +504,7 @@ namespace database
         }
         public static string DROP_Command(string param)
         {
+            Trace.Assert(param != null, "param == null");
             if (param == "-h")
                 return "Drop tbName                   |-> Drop table from current db";
             check(currentDb != noDb, "Not allowed");
@@ -484,6 +513,7 @@ namespace database
         }
         public static string CREATE_Command(string param)
         {
+            Trace.Assert(param != null, "param == null");
             if (param == "-h")
                 return "Create <table> (<field names>)                                    |-> Create a table on current db";
 
@@ -505,6 +535,7 @@ namespace database
         }
         public static string INSERT_Command(string param)
         {
+            Trace.Assert(param != null, "param == null");
             if (param == "-h")
                 return "Insert into <table name> (<fields list>) values (<values list>)   |-> Insert int table on current db";
             check(currentDb != noDb, "Not allowed");
@@ -531,6 +562,7 @@ namespace database
         }
         public static string UPDATE_Command(string param)
         {
+            Trace.Assert(param != null, "param == null");
             if (param == "-h")
                 return "Update <table name> set <field=value>+ where <condition>          |-> Update table entries on selected fields";
             check(currentDb != noDb, "Not allowed");
@@ -554,6 +586,7 @@ namespace database
         }
         public static string DELETE_Command(string param)
         {
+            Trace.Assert(param != null, "param == null");
             if (param == "-h")
                 return "Delete from <table name> where <condition>                        |-> Delete table from current db";
             check(currentDb != noDb, "Not allowed");
@@ -570,6 +603,7 @@ namespace database
         }
         public static string SELECT_Command(string param)
         {
+            Trace.Assert(param != null, "param == null");
             if (param == "-h")
                 return "Select <*|fields list> from <table> [where <condition>]           |-> List tables from current db";
             check(currentDb != noDb, "Not allowed");
@@ -605,6 +639,7 @@ namespace database
 
         public static string Execute(string textCommand)
         {
+            Trace.Assert(textCommand != null, "textCommand == null");
             textCommand = textCommand.Trim();
             string command = "", parameters = "";
             int fSpacePos = (textCommand + " ").IndexOf(' ');
@@ -628,6 +663,7 @@ namespace database
     {
         public static void Run(string[] init)
         {
+            Trace.Assert(init != null, "init == null");
             Console.Out.WriteLine("Known databases:\n" + String.Join("\n", Database.GetKnownDBs()));
             foreach (string comm in init) Console.Out.WriteLine(DbInterpretter.Execute(comm));
             while (DbInterpretter.isRunning)
@@ -642,6 +678,7 @@ namespace database
     {
         public static void Run(string[] init)
         {
+            Trace.Assert(init != null, "init == null");
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new DbInterface(init));
@@ -657,7 +694,6 @@ namespace database
                 "use testDB",
                 "restore",
                 "select * from table1",
-                "bye",
                 };
             DB_ConsoleInterface.Run(init);
             //DB_WindowInterface.Run(init);
