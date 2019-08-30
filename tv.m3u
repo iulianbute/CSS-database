@@ -1,0 +1,133 @@
+#EXTM3U
+#EXTINF:-1,BLOOMBERG
+http://89.38.8.130:39464
+#EXTINF:-1,DTX
+http://89.38.8.130:39482
+#EXTINF:-1,EST TV
+http://89.38.8.130:39435
+#EXTINF:-1,ONE TV
+http://89.38.8.130:39452
+#EXTINF:-1,ANIMAL PLANET
+http://89.38.8.130:39424
+#EXTINF:-1,DA VINCI LEARNING
+http://89.38.8.130:39444
+#EXTINF:-1,DISCOVERY CHANNEL
+http://89.38.8.130:39423
+#EXTINF:-1,DISCOVERY SCIENCE
+http://89.38.8.130:39481
+#EXTINF:-1,HISTORY  CHANNEL
+http://89.38.8.130:39484
+#EXTINF:-1,INVESTIGATION DISCOVERY
+http://89.38.8.130:39483
+#EXTINF:-1,TRAVEL MIX
+http://89.38.8.131:39520
+#EXTINF:-1,CINEMAX
+http://89.38.8.130:39478
+#EXTINF:-1,CINEMAX 2
+http://89.38.8.130:39479
+#EXTINF:-1,HBO 1
+http://89.38.8.130:39476
+#EXTINF:-1,HBO 2
+http://89.38.8.130:39477
+#EXTINF:-1,DEE JAY
+https://deejay_tv-lh.akamaihd.net/i/DeejayTv_1@129866/index_600_av-p.m3u8?sd=10&rebase=on
+#EXTINF:-1,DELUXE MUSIC
+http://streaming-02.mivitec.net/live/smil:test.smil/chunklist_w1073861416_b879931_slDE.m3u8
+#EXTINF:-1,HIT MUSIC
+http://1mstream.digicable.hu/hitmusic/hitmusic.m3u8
+#EXTINF:-1,IBITA GLOBAL TV
+http://server10.streaming-pro.com:1937/live/ibgtvlive/playlist.m3u8
+#EXTINF:-1,MOOZ DANCE
+http://telekomtv-ro.akamaized.net/shls/LIVE$MoozDanceHD/6.m3u8/Level(545259)?start=LIVE&end=END
+#EXTINF:-1,MOOZ HD
+http://telekomtv-ro.akamaized.net/shls/LIVE$MoozHD/6.m3u8/Level(545259)?start=LIVE&end=END&time=1472768553044
+#EXTINF:-1,MOOZ HITS
+http://telekomtv-ro.akamaized.net/shls/LIVE$MoozHitsSD/6.m3u8/Level(545259)?start=LIVE&end=END
+#EXTINF:-1,MTV
+http://182.73.122.74:10005/bysid/412
+#EXTINF:-1,MTV
+http://unilivemtveu-lh.akamaihd.net/i/mtvmusic24_1@134926/index_3500_av-b.m3u8
+#EXTINF:-1,MTV
+http://unilivemtveu-lh.akamaihd.net/i/mtvno_1@346424/index_3500_av-b.m3u8
+#EXTINF:-1,MUSIC CHANNEL
+http://89.38.8.130:39456
+#EXTINF:-1,U TV
+http://89.38.8.130:39447
+#EXTINF:-1,U TV
+http://edge76.rcs-rds.ro/utvedge/utvlivehls/playlist.m3u8
+#EXTINF:-1,VH1
+http://89.38.8.130:39455
+#EXTINF:-1,ZU TV
+http://89.38.8.130:39429
+#EXTINF:-1,ZU TV
+https://play.myovn.com/s1/cache/radiozu/chunklist.m3u8
+#EXTINF:-1,ANTENA 1
+http://89.38.8.130:39412
+#EXTINF:-1,ANTENA 3
+http://89.38.8.130:39421
+#EXTINF:-1,ANTENA STARS
+http://89.38.8.130:39431
+#EXTINF:-1,ARCADIA TV
+http://89.38.8.131:39553
+#EXTINF:-1,BUCURESTI TV
+http://89.38.8.130:39459
+#EXTINF:-1,DIGI 24 HD
+http://89.38.8.130:39448
+#EXTINF:-1,Digi 24 HD
+http://edge76.rcs-rds.ro/digi24edge/smil:digi24.smil/playlist.m3u8
+#EXTINF:-1,HAPPY TV
+http://89.38.8.130:39432
+#EXTINF:-1,KANAL D
+http://89.38.8.130:39418
+#EXTINF:-1,NATIONAL 24 PLUS
+http://89.38.8.130:39438
+#EXTINF:-1,NATIONAL TV
+http://89.38.8.130:39414
+#EXTINF:-1,PRIMA TV
+http://89.38.8.130:39413
+#EXTINF:-1,PRO CINEMA
+http://89.38.8.130:39416
+#EXTINF:-1,PRO CINEMA
+https://vid.hls.protv.ro/procineman/procinema_high/index.m3u8?1
+#EXTINF:-1,PRO GOLD
+https://vid.hls.protv.ro/progoldn/progold_high/index.m3u8?1
+#EXTINF:-1,PRO TV
+http://89.38.8.130:39415
+#EXTINF:-1,PRO TV
+https://vid.hls.protv.ro/protvhdn/protvhd_high/index.m3u8?1
+#EXTINF:-1,PRO TV HD
+http://89.38.8.131:39532
+#EXTINF:-1,PRO TV NEWS
+https://vid.hls.protv.ro/protvnews/protvnews.m3u8?1
+#EXTINF:-1,PRO X
+http://89.38.8.130:39430
+#EXTINF:-1,PRO X
+https://vid.hls.protv.ro/proxhdn/proxhd_high/index.m3u8?1
+#EXTINF:-1,REALITATEA TV
+http://89.38.8.130:39420
+#EXTINF:-1,TV SUD EST
+http://89.38.8.130:39419
+#EXTINF:-1,TVR 1
+http://89.38.8.130:39410
+#EXTINF:-1,TVR 2
+http://89.38.8.130:39411
+#EXTINF:-1,TVR 3
+http://89.38.8.130:39433
+#EXTINF:-1,TVR INTERNATIONAL
+http://89.38.8.130:39458
+#EXTINF:-1,VALEA PRAHOVEI TV
+http://89.38.8.130:39437
+#EXTINF:-1,DIGI SPORT 1
+http://89.38.8.130:39440
+#EXTINF:-1,DOLCE SPORT 2
+http://89.38.8.130:39446
+#EXTINF:-1,EURONEWS
+http://89.38.8.130:39468
+#EXTINF:-1,EUROSPORT 2 RO
+http://89.38.8.130:39426
+#EXTINF:-1,LOOKSPORT
+http://89.38.8.130:39457
+#EXTINF:-1,LOOKSPORT HD
+http://89.38.8.130:39485
+#EXTINF:-1,TELEKOM SPORT 3
+http://89.38.8.130:39422
